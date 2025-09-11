@@ -11,7 +11,7 @@ builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
 
-// ⬇️ add this
+// add this:
 builder.Services.AddSingleton<JwtValidator>();
 
 builder.Build().Run();

@@ -46,30 +46,24 @@ public class Echo
             return r;
         }
 
-        var token = auth.Substring("Bearer ".Length).Trim();
-
-        if (!_validator.TryValidate(token, out var principal, out var why))
+        var token = auth["Bearer ".Length..];
+        var principal = _validator.Validate(token, out var why);
+        if (principal is null)
         {
             var r = req.CreateResponse(HttpStatusCode.Unauthorized);
             await r.WriteStringAsync("Invalid or expired token: " + why);
             return r;
         }
 
-        var sub = principal!.FindFirstValue("sub")
-                  ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(sub))
-        {
-            var r = req.CreateResponse(HttpStatusCode.Unauthorized);
-            await r.WriteStringAsync("Token missing 'sub' claim.");
-            return r;
-        }
+        var sub = principal.FindFirstValue("sub") ??
+                principal.FindFirstValue(ClaimTypes.NameIdentifier);
 
         // 2) Parse body
         var body = await new StreamReader(req.Body).ReadToEndAsync();
         _log.LogInformation("Echo received: {Body}", body);
 
         EchoRequest? data;
-        try { data = JsonSerializer.Deserialize<EchoRequest>(body); }
+        try { data = System.Text.Json.JsonSerializer.Deserialize<EchoRequest>(body); }
         catch
         {
             var bad = req.CreateResponse(HttpStatusCode.BadRequest);
@@ -105,4 +99,5 @@ public class Echo
         await resp.WriteAsJsonAsync(respObj);
         return resp;
     }
+
 }
