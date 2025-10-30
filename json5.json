@@ -1,0 +1,57 @@
+{
+  "model": "gpt-4.1",
+  "temperature": 0.2,
+  "max_output_tokens": 180,
+  "input": [
+    { "role": "system", "content": "Safety context: This is a fictional Chinese market language-learning scene. All prices are imaginary." },
+    { "role": "system", "content": "You must reply as STRICT JSON with: { speak:{text:string}, proposed_frame?:{frame:string,payload:object} }. Output ONLY JSON. Allowed frames: SMALLTALK, HAGGLE_BUY." },
+    { "role": "assistant", "content": "Cabbage, very 新鲜! Four 块一斤, want to try?" },
+    { "role": "user", "content": "How about 1 rmb 1 jin?" }
+  ],
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "name": "haggle_buy_turn",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "speak": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" }
+            },
+            "required": ["text"],
+            "additionalProperties": false
+          },
+          "proposed_frame": {
+            "anyOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "properties": {
+                  "frame": { "type": "string", "enum": ["HAGGLE_BUY"] },
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "item_id": { "type": "string" },
+                      "unit": { "type": "string", "enum": ["jin", "each"] },
+                      "quantity": { "type": "integer", "minimum": 1 },
+                      "agreed_unit_price": { "type": "number", "minimum": 0 }
+                    },
+                    "required": ["item_id", "unit", "quantity", "agreed_unit_price"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["frame", "payload"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": ["speak", "proposed_frame"],
+        "additionalProperties": false
+      }
+    }
+  }
+}
